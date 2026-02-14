@@ -201,7 +201,7 @@ def GeneralSearch(problem, queueing_function, verbose=True):
             print_state(node['state'])
             print()
 
-        # --- nodes = QUEUEING-FUNCTION(nodes, EXPAND(node, problem.OPERATORS)) ---
+        # nodes = QUEUEING-FUNCTION(nodes, EXPAND(node, problem.OPERATORS)) 
         new_nodes = Expand(node, problem['operators'])
         # Filter already-visited children before inserting
         new_nodes = [c for c in new_nodes
@@ -210,8 +210,8 @@ def GeneralSearch(problem, queueing_function, verbose=True):
 
         max_queue_size = max(max_queue_size, len(nodes))
 
+#Prints a summary of the search result
 def print_solution(result, nodes_expanded, max_queue_size, elapsed):
-    """Prints a summary of the search result."""
     print("\n" + "=" * 45)
     if result == "failure":
         print("No solution exists for this puzzle.")
@@ -350,14 +350,14 @@ def main():
     print("\n  Initial state:")
     print_state(initial_state)
 
-    # --- Build problem dict ---
+    #Build problem dict
     problem = {
         'initial_state': initial_state,
         'GoalTest':     GoalTest,
         'operators':     OPERATORS
     }
 
-    # --- Map choice to algorithm name and queueing function ---
+    #Map choice to algorithm name and queueing function
     algo_names = {
         1: "Uniform Cost Search",
         2: "A* — Misplaced Tile Heuristic",
