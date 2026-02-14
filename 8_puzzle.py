@@ -1,5 +1,6 @@
 import heapq
 import copy
+import time
 
 
 #Goal State table which represents the solved puzzle
@@ -13,7 +14,7 @@ Goal_State = [
 #Computes goal positions for heuristic calculation 
 Goal_Position = {}
 for r, row in enumerate(Goal_State):
-    for c, val in enumerate(Goal_State):
+    for c, val in enumerate(row):
         Goal_Position[val] = (r, c)
 
 N_Rows = len(Goal_State)
@@ -168,7 +169,7 @@ def print_state(state):
 def GeneralSearch(problem, queueing_function, verbose=True):
  
     initial_node = CreateNode(problem['initial_state'])
-    nodes, counter = CreateNode(initial_node)
+    nodes, counter = CreateQueue(initial_node)
 
     nodes_expanded = 0
     max_queue_size = 1
@@ -189,7 +190,7 @@ def GeneralSearch(problem, queueing_function, verbose=True):
         visited.add(state_key)
 
         # if problem.GOAL-TEST(node.STATE) succeeds then return node
-        if problem['goal_test'](node['state']):
+        if problem['GoalTest'](node['state']):
             return node, nodes_expanded, max_queue_size
 
         nodes_expanded += 1
@@ -220,7 +221,7 @@ def print_solution(result, nodes_expanded, max_queue_size, elapsed):
         print(f"  Solution depth (moves):  {node['depth']}")
         print(f"  Nodes expanded:          {nodes_expanded}")
         print(f"  Max queue size:          {max_queue_size}")
-        print(f"  Time elapsed:            {elapsed:.4f} s")
+        print(f"  Time elapsed:            {elapsed:.8f} s")
 
         # Reconstruct path from root to goal
         path = []
@@ -246,7 +247,7 @@ def get_puzzle():
     print("  2. Enter your own puzzle")
     choice = input("\n  Choose (1 or 2): ").strip()
 
-    if choice == '2':
+    if choice == "2":
         print("\n  Enter each row of the puzzle separated by spaces.")
         print("  Use 0 for the blank tile. Example:  1 2 3")
         state = []
@@ -264,12 +265,22 @@ def get_puzzle():
                     print("  Invalid input — please enter integers only.")
         return state
     else:
-        # Sample test case
-        return [
-            [1, 3, 6],
-            [5, 0, 2],
-            [4, 7, 8]
-        ]
+        print(" Puzzle 1 or 2")
+        puzzle_choice = input("\n  Choose (1 or 2): ").strip()
+        # Sample test cases
+
+        if puzzle_choice == "1":
+            return [
+                [1, 3, 6],
+                [5, 0, 2],
+                [4, 7, 8]
+            ]
+        else:
+            return [
+                [8, 7, 1],
+                [6, 0, 2], 
+                [5, 4, 3]
+            ]
     
 
 def get_algorithm():
@@ -306,7 +317,7 @@ def main():
     # --- Build problem dict ---
     problem = {
         'initial_state': initial_state,
-        'goal_test':     goal_test,
+        'GoalTest':     GoalTest,
         'operators':     OPERATORS
     }
 
@@ -317,16 +328,16 @@ def main():
         3: "A* — Manhattan Distance Heuristic"
     }
     queueing_funcs = {
-        1: queueing_uniform_cost,
-        2: queueing_misplaced_tile,
-        3: queueing_manhattan
+        1: QueueingUniformCost,
+        2: QueueingMisplacedTile,
+        3: QueueingManhattan
     }
 
     print(f"\n  Running {algo_names[algorithm_choice]} ...\n")
 
     #Run search 
     start = time.time()
-    result, nodes_expanded, max_queue_size = general_search(
+    result, nodes_expanded, max_queue_size = GeneralSearch(
         problem,
         queueing_funcs[algorithm_choice],
         verbose=verbose
