@@ -265,21 +265,57 @@ def get_puzzle():
                     print("  Invalid input — please enter integers only.")
         return state
     else:
-        print(" Puzzle 1 or 2")
-        puzzle_choice = input("\n  Choose (1 or 2): ").strip()
-        # Sample test cases
+        print("Choose a puzzle 1-8")
+        puzzle_choice = input("Enter Choice: ").strip()
 
+        # Sample test cases
         if puzzle_choice == "1":
             return [
-                [1, 3, 6],
-                [5, 0, 2],
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 0]
+            ]
+        elif puzzle_choice == "2":
+            return [
+                [1, 2, 3],
+                [4, 5, 6], 
+                [0, 7, 8]
+            ]
+        elif puzzle_choice == "3":
+            return [
+                [1, 2, 3],
+                [5, 0, 6], 
                 [4, 7, 8]
             ]
-        else:
+        elif puzzle_choice == "4":
             return [
-                [8, 7, 1],
-                [6, 0, 2], 
-                [5, 4, 3]
+                [1, 3, 6],
+                [5, 0, 2], 
+                [4, 7, 8]
+            ]
+        elif puzzle_choice == "5":
+            return [
+                [1, 3, 6],
+                [5, 0, 7], 
+                [4, 8, 2]
+            ]
+        elif puzzle_choice == "6":
+            return [
+                [1, 6, 7],
+                [5, 0, 3], 
+                [4, 8, 2]
+            ]
+        elif puzzle_choice == "7":
+            return [
+                [7, 1, 2],
+                [4, 8, 5], 
+                [6, 3, 0]
+            ]
+        elif puzzle_choice == "8":
+            return [
+                [0, 7, 2],
+                [4, 6, 1], 
+                [3, 5, 8]
             ]
     
 
