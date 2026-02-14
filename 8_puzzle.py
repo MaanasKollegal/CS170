@@ -126,7 +126,7 @@ def Expand(node, operators):
     
 
 #Uniform Cost Search, orders nodes by g(n)
-def queueing_uniform_cost(nodes, counter, new_nodes):
+def QueueingUniformCost(nodes, counter, new_nodes):
     for child in new_nodes:
         child['h'] = H_Zero(child['state'])
         child['f'] = child['g'] + child['h']
@@ -134,8 +134,9 @@ def queueing_uniform_cost(nodes, counter, new_nodes):
         counter[0] += 1
     return nodes
 
+
 #Orders nodes by f(n) = g(N) + H_misplaced(n)
-def queueing_misplaced_tile(nodes, counter, new_nodes):
+def QueueingMisplacedTile(nodes, counter, new_nodes):
     for child in new_nodes:
         child['h'] = H_MisplacedTile(child['state'])
         child['f'] = child['g'] + child['h']
@@ -143,11 +144,198 @@ def queueing_misplaced_tile(nodes, counter, new_nodes):
         counter[0] += 1
     return nodes
 
+
 #Orders nodes by f(n) = g(n) + H_Manhattan(n)
-def queueing_manhattan(nodes, counter, new_nodes):
+def QueueingManhattan(nodes, counter, new_nodes):
     for child in new_nodes:
         child['h'] = H_Manhattan(child['state'])
         child['f'] = child['g'] + child['h']
         heapq.heappush(nodes, (child['f'], counter[0], child))
         counter[0] += 1
     return nodes
+
+
+#Converts a 2-D list state into a hashable tuple-of-tuples.
+def state_to_tuple(state):
+    return tuple(tuple(row) for row in state)
+
+#Prints state of puzzle
+def print_state(state):
+    for row in state:
+        print('  ' + ' '.join(str(v) if v != 0 else '_' for v in row))
+
+#Based on pseudocode provided in instructions
+def GeneralSearch(problem, queueing_function, verbose=True):
+ 
+    initial_node = CreateNode(problem['initial_state'])
+    nodes, counter = CreateNode(initial_node)
+
+    nodes_expanded = 0
+    max_queue_size = 1
+    visited = set() # closed list
+
+    while True:
+        #if EMPTY(nodes) then return "failure"
+        if not nodes:
+            return "failure", nodes_expanded, max_queue_size
+
+        #node = REMOVE-FRONT(nodes)
+        _, _, node = heapq.heappop(nodes)
+
+        state_key = state_to_tuple(node['state'])
+        if state_key in visited:
+            # Already expanded a cheaper path to this state; skip.
+            continue
+        visited.add(state_key)
+
+        # if problem.GOAL-TEST(node.STATE) succeeds then return node
+        if problem['goal_test'](node['state']):
+            return node, nodes_expanded, max_queue_size
+
+        nodes_expanded += 1
+
+        if verbose:
+            print(f"  Expanding: g(n)={node['g']}, h(n)={node['h']}, "
+                  f"f(n)={node['f']}")
+            print_state(node['state'])
+            print()
+
+        # --- nodes = QUEUEING-FUNCTION(nodes, EXPAND(node, problem.OPERATORS)) ---
+        new_nodes = Expand(node, problem['operators'])
+        # Filter already-visited children before inserting
+        new_nodes = [c for c in new_nodes
+                     if state_to_tuple(c['state']) not in visited]
+        nodes = queueing_function(nodes, counter, new_nodes)
+
+        max_queue_size = max(max_queue_size, len(nodes))
+
+def print_solution(result, nodes_expanded, max_queue_size, elapsed):
+    """Prints a summary of the search result."""
+    print("\n" + "=" * 45)
+    if result == "failure":
+        print("No solution exists for this puzzle.")
+    else:
+        node = result
+        print("  Goal state reached!")
+        print(f"  Solution depth (moves):  {node['depth']}")
+        print(f"  Nodes expanded:          {nodes_expanded}")
+        print(f"  Max queue size:          {max_queue_size}")
+        print(f"  Time elapsed:            {elapsed:.4f} s")
+
+        # Reconstruct path from root to goal
+        path = []
+        curr = node
+        while curr is not None:
+            path.append(curr['state'])
+            curr = curr['parent']
+        path.reverse()
+
+        print(f"\n  Solution path ({len(path) - 1} move(s)):")
+        for i, state in enumerate(path):
+            label = "Initial" if i == 0 else f"Step {i}"
+            print(f"\n  [{label}]")
+            print_state(state)
+    print("=" * 45)
+
+#Choose a preset puzzle or enter a puzzle
+def get_puzzle():
+    print("\n" + "=" * 45)
+    print("  Eight Puzzle Solver")
+    print("=" * 45)
+    print("  1. Use a default puzzle (depth-8 test case)")
+    print("  2. Enter your own puzzle")
+    choice = input("\n  Choose (1 or 2): ").strip()
+
+    if choice == '2':
+        print("\n  Enter each row of the puzzle separated by spaces.")
+        print("  Use 0 for the blank tile. Example:  1 2 3")
+        state = []
+        for i in range(N_Rows):
+            while True:
+                try:
+                    raw = input(f"  Row {i + 1}: ").strip().split()
+                    row = [int(x) for x in raw]
+                    if len(row) != N_Cols:
+                        print(f"  Please enter exactly {N_Cols} numbers.")
+                        continue
+                    state.append(row)
+                    break
+                except ValueError:
+                    print("  Invalid input — please enter integers only.")
+        return state
+    else:
+        # Sample test case
+        return [
+            [1, 3, 6],
+            [5, 0, 2],
+            [4, 7, 8]
+        ]
+    
+
+def get_algorithm():
+    print("\n  Select algorithm:")
+    print("  1. Uniform Cost Search")
+    print("  2. A* with Misplaced Tile Heuristic")
+    print("  3. A* with Manhattan Distance Heuristic")
+    while True:
+        choice = input("\n  Choose (1, 2, or 3): ").strip()
+        if choice in ('1', '2', '3'):
+            return int(choice)
+        print("  Invalid choice — please enter 1, 2, or 3.")
+
+
+def get_verbose():
+    ans = input("\n  Print each expanded node? (y/n): ").strip().lower()
+    return ans != 'n'
+
+
+
+
+
+
+
+def main():
+    #Gather inputs
+    initial_state = get_puzzle()
+    algorithm_choice = get_algorithm()
+    verbose = get_verbose()
+
+    print("\n  Initial state:")
+    print_state(initial_state)
+
+    # --- Build problem dict ---
+    problem = {
+        'initial_state': initial_state,
+        'goal_test':     goal_test,
+        'operators':     OPERATORS
+    }
+
+    # --- Map choice to algorithm name and queueing function ---
+    algo_names = {
+        1: "Uniform Cost Search",
+        2: "A* — Misplaced Tile Heuristic",
+        3: "A* — Manhattan Distance Heuristic"
+    }
+    queueing_funcs = {
+        1: queueing_uniform_cost,
+        2: queueing_misplaced_tile,
+        3: queueing_manhattan
+    }
+
+    print(f"\n  Running {algo_names[algorithm_choice]} ...\n")
+
+    #Run search 
+    start = time.time()
+    result, nodes_expanded, max_queue_size = general_search(
+        problem,
+        queueing_funcs[algorithm_choice],
+        verbose=verbose
+    )
+    elapsed = time.time() - start
+
+    #Display results
+    print_solution(result, nodes_expanded, max_queue_size, elapsed)
+
+
+if __name__ == "__main__":
+    main()
