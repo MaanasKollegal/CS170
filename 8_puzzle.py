@@ -1,3 +1,14 @@
+# Eight Puzzle Solver — CS 170, Project 1
+# Name: Maanas Kollegal
+# SID:  862380535
+# Date: February 13, 2026
+#
+# Resources consulted:
+# - CS 170 class slides
+# - Python docs: heapq (https://docs.python.org/3/library/heapq.html)
+# - Python docs: copy module (deepcopy)
+
+
 import heapq
 import copy
 import time
@@ -33,6 +44,7 @@ def find_blank(state):
                 return r, c
     raise ValueError("No blank tile found.")
 
+# Swaps blank tile with target position; returns None if move is out of bounds
 def MakeMove(state, r, c, nr, nc):
     if nr < 0 or nr >= N_Rows or nc < 0 or nc >= N_Cols:
         return None
