@@ -108,5 +108,46 @@ def H_Manhattan(state):
     return total
 
 
+#Creates children nodes by using each operator
+def Expand(node, operators):
+    children = []
+    for op in operators:
+        new_state = op(node['state'])
+        if new_state is not None:
+            child = CreateNode(
+                state=new_state,
+                parent=node,
+                g=node['g'] + 1,   # unit cost
+                h=0,                # heuristic set by queueing function
+                depth=node['depth'] + 1
+            )
+            children.append(child)
+    return children
+    
 
-def Expand(node, operators):       
+#Uniform Cost Search, orders nodes by g(n)
+def queueing_uniform_cost(nodes, counter, new_nodes):
+    for child in new_nodes:
+        child['h'] = H_Zero(child['state'])
+        child['f'] = child['g'] + child['h']
+        heapq.heappush(nodes, (child['f'], counter[0], child))
+        counter[0] += 1
+    return nodes
+
+#Orders nodes by f(n) = g(N) + H_misplaced(n)
+def queueing_misplaced_tile(nodes, counter, new_nodes):
+    for child in new_nodes:
+        child['h'] = H_MisplacedTile(child['state'])
+        child['f'] = child['g'] + child['h']
+        heapq.heappush(nodes, (child['f'], counter[0], child))
+        counter[0] += 1
+    return nodes
+
+#Orders nodes by f(n) = g(n) + H_Manhattan(n)
+def queueing_manhattan(nodes, counter, new_nodes):
+    for child in new_nodes:
+        child['h'] = H_Manhattan(child['state'])
+        child['f'] = child['g'] + child['h']
+        heapq.heappush(nodes, (child['f'], counter[0], child))
+        counter[0] += 1
+    return nodes
