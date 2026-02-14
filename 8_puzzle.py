@@ -80,6 +80,10 @@ def CreateQueue(node): #Creates the queue which starts out with one node
     return[(node["f"], 0, node)], counter
 
 
+#Uniform cost search, always returns 0
+def H_Zero(state):
+    return 0
+
 #Counts tiles which are misplaced (tiles that are not in the goal position)
 def H_MisplacedTile(state):
     count = 0
@@ -103,5 +107,6 @@ def H_Manhattan(state):
                 total += abs(r - gr) + abs(c - gc)
     return total
 
-    
-        
+
+
+def Expand(node, operators):       
