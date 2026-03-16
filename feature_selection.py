@@ -88,7 +88,7 @@ def forward_selection(data):
 
             if accuracy > best_accuracy_this_level:
                 best_accuracy_this_level = accuracy
-                feature_to_add_this_level = r
+                feature_to_add_this_level = f
 
         current_set = current_set | {feature_to_add_this_level}
 
@@ -104,3 +104,91 @@ def forward_selection(data):
             
     print(f"Finished search. Best feature subset is {set_str(best_overall_features)}, "
           f"which has an accuracy of {best_overall_accuracy * 100:.1f}%")
+    
+
+
+def backwards_elimination(data):
+    num_features = len(data[0]) - 1
+
+    current_set = set(range(1, num_features + 1))
+    full_acc = cross_validation(data, current_set, None)
+    print(f"\nRunning nearest neighbor with all {num_features} features, "
+          f"using \"leaving-one-out\" evaluation, I get an accuracy of {full_acc * 100:.1f}%")
+ 
+    print("\nBeginning search.\n")
+ 
+    best_overall_accuracy = full_acc
+    best_overall_features = set(current_set)
+ 
+    for level in range(1, num_features + 1):
+        if len(current_set) == 0:
+            break
+ 
+        best_accuracy_this_level = 0.0
+        feature_to_remove_this_level = None
+ 
+        for f in sorted(current_set):
+            candidate = current_set - {f}
+            if len(candidate) == 0:
+                accuracy = 0.0
+            else:
+                accuracy = cross_validation(data, candidate, None, best_accuracy_this_level)
+            print(f"\t\tUsing feature(s) {set_str(candidate)} accuracy is {accuracy * 100:.1f}%")
+ 
+            if accuracy > best_accuracy_this_level:
+                best_accuracy_this_level = accuracy
+                feature_to_remove_this_level = f
+ 
+        current_set = current_set - {feature_to_remove_this_level}
+ 
+        if best_accuracy_this_level < best_overall_accuracy:
+            print(f"\n(Accuracy has decreased, continuing search.)")
+        else:
+            best_overall_accuracy = best_accuracy_this_level
+            best_overall_features = set(current_set)
+ 
+        print(f"Feature set {set_str(current_set)} was best, accuracy is "
+              f"{best_accuracy_this_level * 100:.1f}%\n")
+ 
+        if len(current_set) == 0:
+            break
+ 
+    print(f"Finished search, the best feature subset is {set_str(best_overall_features)}, "
+          f"which has an accuracy of {best_overall_accuracy * 100:.1f}%")
+ 
+
+
+
+def main():
+    print("Welcome to Feature Selection Algorithm.")
+ 
+    filename = input("Type in the name of the file to test: ").strip()
+ 
+    try:
+        data = load_data(filename)
+    except FileNotFoundError:
+        print(f"Error: File '{filename}' not found.")
+        sys.exit(1)
+ 
+    num_features = len(data[0]) - 1
+    num_instances = len(data)
+    print(f"\nThis dataset has {num_features} features (not including the class attribute), "
+          f"with {num_instances} instances.\n")
+ 
+    print("Type the number of the algorithm you want to run.")
+    print("  1) Forward Selection")
+    print("  2) Backward Elimination")
+ 
+    choice = input("\n").strip()
+ 
+    if choice == "1":
+        forward_selection(data)
+    elif choice == "2":
+        backwards_elimination(data)
+    else:
+        print("Invalid choice. Please enter 1 or 2.")
+        sys.exit(1)
+ 
+ 
+if __name__ == "__main__":
+    main()
