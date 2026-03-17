@@ -1,4 +1,3 @@
-
 import math
 import sys
 
@@ -19,7 +18,9 @@ def load_data(filename):
 def set_str(s):
     return "{" + ",".join(str(x) for x in sorted(s)) + "}"
  
-
+#Evaluates accuracy of 1-NN using leave-one-out cross validation.
+#Uses feature set = current_set + feature_to_add.
+#best_so_far prunes a candidate if it cannot beat the current best accuracy
 def cross_validation(data, current_set, feature_to_add, best_so_far=0.0):
     features = set(current_set)
     if feature_to_add is not None:
@@ -59,7 +60,9 @@ def cross_validation(data, current_set, feature_to_add, best_so_far=0.0):
     return num_correct / n
             
 
-
+#Greedy forward search
+#starts with an empty set and adds one feature
+#at a time, always picking whichever feature improves accuracy the most.
 def forward_selection(data): 
     num_features = len(data[0]) - 1
 
@@ -106,10 +109,12 @@ def forward_selection(data):
           f"which has an accuracy of {best_overall_accuracy * 100:.1f}%")
     
 
-
+#Greedy backward search
+#starts with all features and removes one feature at a time, always dropping whichever feature hurts accuracy the least.
 def backwards_elimination(data):
     num_features = len(data[0]) - 1
 
+    #start with full feature set
     current_set = set(range(1, num_features + 1))
     full_acc = cross_validation(data, current_set, None)
     print(f"\nRunning nearest neighbor with all {num_features} features, "
@@ -117,9 +122,11 @@ def backwards_elimination(data):
  
     print("\nBeginning search.\n")
  
+    #Initialize best as the full feature set accuracy
     best_overall_accuracy = full_acc
     best_overall_features = set(current_set)
  
+    #Each level of the loop removes one feature from the current set
     for level in range(1, num_features + 1):
         if len(current_set) == 0:
             break
@@ -127,6 +134,7 @@ def backwards_elimination(data):
         best_accuracy_this_level = 0.0
         feature_to_remove_this_level = None
  
+        #Try removing each feature still in the current set
         for f in sorted(current_set):
             candidate = current_set - {f}
             if len(candidate) == 0:
