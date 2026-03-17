@@ -35,10 +35,12 @@ def cross_validation(data, current_set, feature_to_add, best_so_far=0.0):
         nearest_dist = math.inf
         nearest_label = None
 
+        #Find the nearest neighbor by comparing instance i to all others
         for k in range(n):
             if k == i:
                 continue # skip self
             
+            #Compute Euclidean distance using only the selected features
             dist = 0.0
             for f in features:
                 diff = data[i][f] - data[k][f] # column f = feature f(1-index)
@@ -52,7 +54,7 @@ def cross_validation(data, current_set, feature_to_add, best_so_far=0.0):
         if nearest_label == label_i:
             num_correct += 1
 
-
+        #If the highest score from here can't beat best_so_far, stop
         remaining = n - i - 1
         if (num_correct + remaining) / n < best_so_far:
             return (num_correct + remaining) / n
@@ -66,6 +68,7 @@ def cross_validation(data, current_set, feature_to_add, best_so_far=0.0):
 def forward_selection(data): 
     num_features = len(data[0]) - 1
 
+    #Evaluate accuracy using all features before search begins
     all_features = set(range(1, num_features + 1))
     full_acc = cross_validation(data, all_features, None)
     print(f"\nRunning nearest neighbor with all {num_features} features, "
@@ -77,10 +80,12 @@ def forward_selection(data):
     best_overall_accuracy = 0.0
     best_overall_features = set()
 
+    #Each level of the loop adds one feature to the current set
     for level in range(1, num_features + 1):
         best_accuracy_this_level = 0.0
         feature_to_add_this_level = None
  
+        #Try adding each feature not already in the current set
         for f in range(1, num_features + 1):
             if f in current_set:
                 continue
@@ -89,12 +94,15 @@ def forward_selection(data):
             candidate = current_set | {f}
             print(f"\t\tUsing feature(s) {set_str(candidate)} accuracy is {accuracy * 100:.1f}%")
 
+            #Track the best feature to add at this level
             if accuracy > best_accuracy_this_level:
                 best_accuracy_this_level = accuracy
                 feature_to_add_this_level = f
 
+        #Add the best feature found at this level
         current_set = current_set | {feature_to_add_this_level}
 
+        #Warn if accuracy dropped, but keep searching in case of local maxima
         if best_accuracy_this_level < best_overall_accuracy:
             print(f"\n(Accuracy has decreased, continuing search in case of local maxima)")
 
@@ -143,10 +151,12 @@ def backwards_elimination(data):
                 accuracy = cross_validation(data, candidate, None, best_accuracy_this_level)
             print(f"\t\tUsing feature(s) {set_str(candidate)} accuracy is {accuracy * 100:.1f}%")
  
+            #Track the best feature to remove at this level
             if accuracy > best_accuracy_this_level:
                 best_accuracy_this_level = accuracy
                 feature_to_remove_this_level = f
- 
+
+        #Remove the feature whose removal hurt accuracy the least
         current_set = current_set - {feature_to_remove_this_level}
  
         if best_accuracy_this_level < best_overall_accuracy:
